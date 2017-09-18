@@ -60,6 +60,7 @@ class ViewController: UIViewController {
     private var attachmentBehavior : UIAttachmentBehavior!
     private var pushBehavior : UIPushBehavior!
     private var itemBehavior : UIDynamicItemBehavior!
+    private var collision : UICollisionBehavior!
     
     //MARK:- View Life Cycle
     
@@ -67,6 +68,7 @@ class ViewController: UIViewController {
         super.viewDidLoad()
         
         addViews()
+        addAnimator()
     }
 
     override func didReceiveMemoryWarning() {
@@ -75,6 +77,43 @@ class ViewController: UIViewController {
     }
 
     //MARK:- UIDynamics
+    
+    func addAnimator() {
+        
+        animator = UIDynamicAnimator(referenceView:self.view)
+        
+        addPinAttachment(for: arrowRect, and: circleView, at: center)
+        
+//        addPushBehavior()
+        
+        animator.addBehavior(UIGravityBehavior(items:[arrowRect, circleView]))
+        
+        addCollisionBehavior()
+    }
+    
+    func addPinAttachment(for view1:UIView, and view2:UIView, at anchorPoint:CGPoint) {
+        let pinAttachment = UIAttachmentBehavior.pinAttachment(with: view1, attachedTo: view2, attachmentAnchor: anchorPoint)
+        pinAttachment.frictionTorque = 0
+        pinAttachment.attachmentRange = UIFloatRangeMake(0, 180)
+        
+        animator.addBehavior(pinAttachment)
+    }
+    
+    func addPushBehavior() {
+        let push = UIPushBehavior(items:[arrowRect], mode:.instantaneous)
+        push.magnitude = 1
+        push.angle = 0
+        
+        animator.addBehavior(push)
+    }
+    
+    func addCollisionBehavior() {
+        collision = UICollisionBehavior(items:[arrowRect, circleView])
+        collision.translatesReferenceBoundsIntoBoundary = true
+        
+        animator.addBehavior(collision)
+    }
+    
     //MARK:- Helper Methods
 
     func addViews() {
