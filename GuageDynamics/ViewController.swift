@@ -19,9 +19,9 @@ class ViewController: UIViewController {
     
     lazy var arrowRect : UIView = {
 
-        let arrowRect = UIView(frame: CGRect(x:self.view.frame.midX-150,
-                                             y:self.view.frame.midY-5,
-                                             width:150 ,height:10))
+        let arrowRect = UIView(frame: CGRect(x:self.view.frame.midX-130,
+                                             y:self.view.frame.midY-2.5,
+                                             width:150 ,height:5))
         arrowRect.backgroundColor = UIColor.black
         
         return arrowRect
@@ -44,7 +44,7 @@ class ViewController: UIViewController {
     lazy var circleView : UIView = {
         
         // To create a circle 
-        // Width and Height need to equal
+        // Width and Height need to be equal
         // Corner radius should be (Width Or Height)/2
         
         let circleView = UIView(frame: CGRect(x:0.0, y:0.0, width:20, height:20))
@@ -56,10 +56,26 @@ class ViewController: UIViewController {
         return circleView
     }()
     
+    lazy var miniView : UIView = {
+        let miniView = UIView(frame: CGRect(x:0, y:0, width:self.view.frame.width-40, height:self.view.frame.height-40))
+        miniView.center = self.view.center
+        miniView.backgroundColor = UIColor.red
+        
+        return miniView
+    }()
+    
+    lazy var pushButton : UIButton = {
+       
+        let pushButton = UIButton(frame: CGRect(x:self.view.frame.midX-40, y:self.view.frame.height-50, width:80, height:30))
+        pushButton.backgroundColor = UIColor.green
+        pushButton.setTitle("Push", for: .normal)
+        pushButton.addTarget(self, action: #selector(pushAction), for: .touchUpInside)
+        
+        return pushButton
+    }()
+    
     private var animator : UIDynamicAnimator!
-    private var attachmentBehavior : UIAttachmentBehavior!
     private var pushBehavior : UIPushBehavior!
-    private var itemBehavior : UIDynamicItemBehavior!
     private var collision : UICollisionBehavior!
     
     //MARK:- View Life Cycle
@@ -82,13 +98,14 @@ class ViewController: UIViewController {
         
         animator = UIDynamicAnimator(referenceView:self.view)
         
-        addPinAttachment(for: arrowRect, and: circleView, at: center)
+        let itemBehaviour = UIDynamicItemBehavior(items: [arrowRect])
+        itemBehaviour.elasticity = 0.6
+        itemBehaviour.allowsRotation = true
         
-//        addPushBehavior()
+        animator.addBehavior(itemBehaviour)
         
-        animator.addBehavior(UIGravityBehavior(items:[arrowRect, circleView]))
+        addPinAttachment(for: arrowRect, and: miniView, at: center)
         
-        addCollisionBehavior()
     }
     
     func addPinAttachment(for view1:UIView, and view2:UIView, at anchorPoint:CGPoint) {
@@ -108,18 +125,29 @@ class ViewController: UIViewController {
     }
     
     func addCollisionBehavior() {
-        collision = UICollisionBehavior(items:[arrowRect, circleView])
+        collision = UICollisionBehavior(items:[arrowRect, miniView])
         collision.translatesReferenceBoundsIntoBoundary = true
         
         animator.addBehavior(collision)
     }
     
+    //MARK:- UIActions
+    
+    func pushAction(sender: UIButton!) {
+        let push = UIPushBehavior(items:[arrowRect], mode:.instantaneous)
+        push.magnitude = 0.1
+        push.angle = 90
+        
+        animator.addBehavior(push)
+    }
+    
     //MARK:- Helper Methods
 
     func addViews() {
-//        self.view.layer.addSublayer(circleLayer)
+        self.view.addSubview(miniView)
         self.view.addSubview(arrowRect)
-        self.view.addSubview(circleView)
+        self.view.addSubview(pushButton)
+        
     }
 }
 
