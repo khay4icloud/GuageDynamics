@@ -8,7 +8,7 @@
 
 import UIKit
 
-class ViewController: UIViewController {
+class ViewController: UIViewController, CAAnimationDelegate {
 
     //MARK:- Properties
     
@@ -19,16 +19,16 @@ class ViewController: UIViewController {
     
     lazy var arrowRect : UIView = {
 
-        let arrowRect = UIView(frame: CGRect(x:self.view.frame.midX-130,
-                                             y:self.view.frame.midY-2.5,
-                                             width:150 ,height:5))
-        arrowRect.backgroundColor = UIColor.black
+        let arrowRect = UIImageView(frame: CGRect(x:self.view.frame.midX-150,
+                                             y:self.view.frame.midY-15,
+                                             width:150 ,height:30))
+        arrowRect.image = #imageLiteral(resourceName: "arrow.png")
         
         return arrowRect
     }()
     
     lazy var circleLayer : CAShapeLayer = {
-       
+        
         let circlePath = UIBezierPath(arcCenter: CGPoint(x:self.view.frame.midX, y:self.view.frame.midY),
                                       radius: CGFloat(20), startAngle: CGFloat(0), endAngle: CGFloat(CGFloat.pi*2), clockwise: true)
         let circleLayer = CAShapeLayer()
@@ -41,25 +41,10 @@ class ViewController: UIViewController {
         return circleLayer
     }()
     
-    lazy var circleView : UIView = {
-        
-        // To create a circle 
-        // Width and Height need to be equal
-        // Corner radius should be (Width Or Height)/2
-        
-        let circleView = UIView(frame: CGRect(x:0.0, y:0.0, width:20, height:20))
-        circleView.center = self.view.center
-        circleView.layer.cornerRadius = circleView.frame.width/2
-        circleView.backgroundColor = UIColor.blue
-        circleView.clipsToBounds = true
-        
-        return circleView
-    }()
-    
     lazy var miniView : UIView = {
-        let miniView = UIView(frame: CGRect(x:0, y:0, width:self.view.frame.width-40, height:self.view.frame.height-40))
+        let miniView = UIView(frame: CGRect(x:0, y:0, width:self.view.frame.width-40, height:self.view.frame.height-400))
         miniView.center = self.view.center
-        miniView.backgroundColor = UIColor.red
+        miniView.backgroundColor = UIColor.gray
         
         return miniView
     }()
@@ -84,7 +69,7 @@ class ViewController: UIViewController {
         super.viewDidLoad()
         
         addViews()
-        addAnimator()
+        setAnchorPoint(anchorPoint: CGPoint(x:1.0, y:0.5), view: arrowRect)
     }
 
     override func didReceiveMemoryWarning() {
@@ -94,60 +79,69 @@ class ViewController: UIViewController {
 
     //MARK:- UIDynamics
     
-    func addAnimator() {
-        
-        animator = UIDynamicAnimator(referenceView:self.view)
-        
-        let itemBehaviour = UIDynamicItemBehavior(items: [arrowRect])
-        itemBehaviour.elasticity = 0.6
-        itemBehaviour.allowsRotation = true
-        
-        animator.addBehavior(itemBehaviour)
-        
-        addPinAttachment(for: arrowRect, and: miniView, at: center)
-        
-    }
-    
-    func addPinAttachment(for view1:UIView, and view2:UIView, at anchorPoint:CGPoint) {
-        let pinAttachment = UIAttachmentBehavior.pinAttachment(with: view1, attachedTo: view2, attachmentAnchor: anchorPoint)
-        pinAttachment.frictionTorque = 0
-        pinAttachment.attachmentRange = UIFloatRangeMake(0, 180)
-        
-        animator.addBehavior(pinAttachment)
-    }
-    
-    func addPushBehavior() {
-        let push = UIPushBehavior(items:[arrowRect], mode:.instantaneous)
-        push.magnitude = 1
-        push.angle = 0
-        
-        animator.addBehavior(push)
-    }
-    
-    func addCollisionBehavior() {
-        collision = UICollisionBehavior(items:[arrowRect, miniView])
-        collision.translatesReferenceBoundsIntoBoundary = true
-        
-        animator.addBehavior(collision)
-    }
     
     //MARK:- UIActions
     
     func pushAction(sender: UIButton!) {
-        let push = UIPushBehavior(items:[arrowRect], mode:.instantaneous)
-        push.magnitude = 0.1
-        push.angle = 90
-        
-        animator.addBehavior(push)
+        arrowRect.rotate360Degrees(duration: 2.0, completionDelegate: self)
     }
     
     //MARK:- Helper Methods
 
     func addViews() {
-        self.view.addSubview(miniView)
         self.view.addSubview(arrowRect)
         self.view.addSubview(pushButton)
-        
+        self.view.layer.addSublayer(circleLayer)
     }
+    
+    func setAnchorPoint(anchorPoint: CGPoint, view: UIView) {
+        var newPoint = CGPoint(x:view.bounds.size.width * anchorPoint.x, y:view.bounds.size.height * anchorPoint.y)
+        var oldPoint = CGPoint(x:view.bounds.size.width * view.layer.anchorPoint.x, y:view.bounds.size.height * view.layer.anchorPoint.y)
+        
+        newPoint = newPoint.applying(view.transform)
+        oldPoint = oldPoint.applying(view.transform)
+        
+        var position : CGPoint = view.layer.position
+        
+        position.x -= oldPoint.x
+        position.x += newPoint.x;
+        
+        position.y -= oldPoint.y;
+        position.y += newPoint.y;
+        
+        view.layer.position = position;
+        view.layer.anchorPoint = anchorPoint;
+    }
+    
+    //MARK:- CAAnimation & Delegate
+    
+    func animationDidStart(_ anim: CAAnimation) {
+        print("Animation did start")
+        
+        print("ArrowRect Specs: \(arrowRect.frame)")
+    }
+    
+    func animationDidStop(_ anim: CAAnimation, finished flag: Bool) {
+        print("Animation did stop")
+        
+        arrowRect.transform = arrowRect.transform.rotated(by: CGFloat(.pi * 1.0))
+        arrowRect.frame = CGRect(x:self.view.frame.midX-150, y:self.view.frame.midY-15, width:arrowRect.frame.width, height:arrowRect.frame.height)
+        
+        print("ArrowRect Specs: \(arrowRect.frame)")
+    }
+    
 }
 
+extension UIView {
+    func rotate360Degrees(duration: CFTimeInterval = 1.0, completionDelegate: AnyObject? = nil) {
+        let rotateAnimation = CABasicAnimation(keyPath: "transform.rotation")
+        rotateAnimation.fromValue = 0.0
+        rotateAnimation.toValue = CGFloat(CGFloat.pi * 0.5)
+        rotateAnimation.duration = duration
+        
+        if let delegate: AnyObject = completionDelegate {
+            rotateAnimation.delegate = (delegate as! CAAnimationDelegate)
+        }
+        self.layer.add(rotateAnimation, forKey: nil)
+    }
+}

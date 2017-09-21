@@ -10,12 +10,12 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "GuageDynamics/ViewController.swift"
-            timestampString = "527487100.047795"
+            timestampString = "527653777.81263"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "116"
-            endingLineNumber = "116"
-            landmarkName = "addPinAttachment(for:and:at:)"
+            startingLineNumber = "85"
+            endingLineNumber = "85"
+            landmarkName = "pushAction(sender:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -26,12 +26,12 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "GuageDynamics/ViewController.swift"
-            timestampString = "527487242.81564"
+            timestampString = "527653777.81263"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "136"
-            endingLineNumber = "136"
-            landmarkName = "pushAction(sender:)"
+            startingLineNumber = "125"
+            endingLineNumber = "125"
+            landmarkName = "animationDidStop(_:finished:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
